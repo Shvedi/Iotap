@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
                     case 1:
                         String msg = new String(writeBuf);
                         msg = msg.substring(begin, end);
+                        Log.d("MAIN ACITIvity", msg);
                         break;
                 }
             }
@@ -112,10 +114,13 @@ public class MainActivity extends AppCompatActivity {
         Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
-                bluetoothDevice = device;
+                if(device.getName().equals("G11")){
+                    bluetoothDevice = device;
+                    break;
+                }
             }
             if (bluetoothDevice!=null){
-                textView.setText("Device Available: "+bluetoothDevice);
+                textView.setText("Device Available: "+bluetoothDevice.getName());
                 bluetoothConThread = new BluetoothConThread(bluetoothDevice,adapter,this);
                 bluetoothConThread.start();
             }

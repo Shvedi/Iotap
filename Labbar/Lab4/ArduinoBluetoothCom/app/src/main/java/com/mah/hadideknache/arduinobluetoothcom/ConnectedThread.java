@@ -2,6 +2,8 @@ package com.mah.hadideknache.arduinobluetoothcom;
 
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,18 +37,21 @@ public class ConnectedThread extends Thread{
             while (true) {
                 try {
                     bytes += inputStream.read(buffer, bytes, buffer.length - bytes);
+
                     for(int i = begin; i < bytes; i++) {
-
-                        if(buffer[i] == "#".getBytes()[0]) {
-
+                        //Log.d("RECIEVED BT: ",new String(buffer) );
+                         if(buffer[i] == "h".getBytes()[0]) {
                             handler.obtainMessage(1, begin, i, buffer).sendToTarget();
-                            begin = i + 1;
+                            // Log.d("RECIEVED BT: ",new String(buffer) );
+                           // begin = i + 1;
+                             if(i == bytes - 1) {
 
-                            if(i == bytes - 1) {
-                                bytes = 0;
-                                begin = 0;
-                            }
-                        } }
+                                 bytes = 0;
+                                 begin = 0;
+                             }
+                        }
+
+                    }
                 } catch (IOException e) {
                     break;
                 }
