@@ -33,9 +33,11 @@ public class MqttHelper {
     private String subs = "esp/test";
     private final ColorPicker colorPick;
     private String message;
+    private MainActivity main;
 
 
     public MqttHelper(MainActivity main, Context context){
+        this.main = main;
         mqttUser = context.getString(R.string.mqtt_user);
         mqttPassword = context.getString(R.string.mqtt_pw);
         mqttAndroidClient = new MqttAndroidClient(context,serverUri,clientId);
@@ -76,6 +78,7 @@ public class MqttHelper {
                 @Override
                 public void onSuccess(IMqttToken iMqttToken) {
                     Log.v("OnSuccess","Connected!");
+                    main.setServerText("Server connected");
                     DisconnectedBufferOptions disconnectBuffer = new DisconnectedBufferOptions();
                     disconnectBuffer.setBufferEnabled(true);
                     disconnectBuffer.setBufferSize(100);
@@ -131,6 +134,7 @@ public class MqttHelper {
                 MqttMessage mqttMessage = new MqttMessage(message.getBytes());
                 try {
                     mqttAndroidClient.publish(subs,mqttMessage);
+                    Log.i("MqttHelper", mqttMessage.toString());
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }

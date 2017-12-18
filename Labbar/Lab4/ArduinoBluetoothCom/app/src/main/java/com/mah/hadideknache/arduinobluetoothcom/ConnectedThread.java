@@ -43,7 +43,7 @@ public class ConnectedThread extends Thread{
                          if(buffer[i] == "h".getBytes()[0]) {
                             handler.obtainMessage(1, begin, i, buffer).sendToTarget();
                             // Log.d("RECIEVED BT: ",new String(buffer) );
-                           // begin = i + 1;
+                            // begin = i + 1;
                              if(i == bytes - 1) {
 
                                  bytes = 0;
