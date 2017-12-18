@@ -98,10 +98,12 @@ public class Functions{
         for(int i=0;i<window;i++){
             for (int j=0;j<6;j++) {
                 if (j<3) {
-                    dataset[(i*6)+j] = ((((average[(i*6)+j]-minAcc)/(maxAcc-minAcc))*(100-0))+0);
+                  int i = ((((average[(i*6)+j]-minAcc)/(maxAcc-minAcc))*(100-0))+0);
+                    dataset[(i*6)+j] = i;
                 }
                 else{
-                    dataset[(i*6)+j] = ((((dataset[(i*6)+j]-minGyro)/(maxGyro-minGyro))*(100-0))+0);
+                  int i = ((((dataset[(i*6)+j]-minGyro)/(maxGyro-minGyro))*(100-0))+0);
+                    dataset[(i*6)+j] = i;
                 }
                 System.out.println(dataset[i+j]);
 

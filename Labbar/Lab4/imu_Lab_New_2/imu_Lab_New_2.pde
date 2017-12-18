@@ -15,13 +15,13 @@ import wekaizing.*;
 //Declare the weka variables
 WekaData mydata;
 WekaClassifier classifier;
-String trainPath = "/Users/hadideknache/Desktop/IOT ht17/imu_Lab_New_2/Normalize/Train_final.arff";
+String trainPath = "Users/hello/OneDrive/Dokument/Plugg/3/IOTAP/LabbGrupp/Iotap/Labbar/Lab4/imu_Lab_New_2/Train_test12_18.arff";
 String lable = "left";
 int counter = 1;
 int counterg = 0;
 private Functions func;
-int freq = 40; //frequency of the sampling in sensor
-int sen = 5000; //sensitivity of the sensor
+int freq = 45; //frequency of the sampling in sensor
+int sens = 18000; //sensitivity of the sensor
 int insNum = 40; //length of sliding window
 int ins = 1; // counter for gesture
 boolean trainFile = true; // if trainFile is set to True, the application generates training dataset
@@ -366,6 +366,8 @@ String port() {
 }
 void setupSensor(){
   g_serial.write("w"+insNum+"\n"); // set the window size in the sensor
+   g_serial.write("f"+freq+"\n"); // set the window size in the sensor
+    g_serial.write("s"+ sens+"\n"); // set the window size in the sensor
 }
 void mousePressed() {
   file.close();
