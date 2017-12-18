@@ -120,28 +120,15 @@ public class MqttHelper {
         mqttAndroidClient.setCallback(callback);
     }
 
-    public void sendMessageMqtt(){
-        colorPick.show();
+    public void sendMessageMqtt(String msg){
 
-    /* Listener when clicking on the button */
-        colorPick.setCallback(new ColorPickerCallback() {
-            @Override
-            public void onColorChosen(@ColorInt int color) {
-                // Do whatever you want
-                // Examples
-                message = Integer.toString(Color.red(color))+","+Integer.toString(Color.green(color))+","+Integer.toString(Color.blue(color));
-
-                MqttMessage mqttMessage = new MqttMessage(message.getBytes());
-                try {
-                    mqttAndroidClient.publish(subs,mqttMessage);
-                    Log.i("MqttHelper", mqttMessage.toString());
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
-                colorPick.cancel();
-            }
-        });
-
+        MqttMessage mqttMessage = new MqttMessage(msg.getBytes());
+        try {
+            mqttAndroidClient.publish(subs,mqttMessage);
+            Log.i("MqttHelper", mqttMessage.toString());
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 
 

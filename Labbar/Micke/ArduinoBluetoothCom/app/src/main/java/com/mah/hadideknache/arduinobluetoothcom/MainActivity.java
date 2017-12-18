@@ -79,21 +79,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initComponents() {
-        String[] labels = {"left", "right", "up", "down","tilt_left","tilt_right"};
-        spinner = (Spinner)findViewById(R.id.spinner_1);
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(this,R.layout.support_simple_spinner_dropdown_item,labels);
-        spinner.setAdapter(typeAdapter);
-        spinner.setOnItemSelectedListener(new LabelListener());
 
-
-        btn = (Button) findViewById(R.id.button);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mqttHelper.sendMessageMqtt();
-
-            }
-        });
 
         btn_bt = findViewById(R.id.btn_bt);
         btn_bt.setOnClickListener(new View.OnClickListener() {
@@ -185,9 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(enableIntent,1);
             }
         }
-        if(adapter.isEnabled()){
-            tv_bluetooth.setText("Bluetooth connected");
-        }
+
         Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
@@ -205,6 +189,9 @@ public class MainActivity extends AppCompatActivity {
         }
         else{
             textView.setText("No device connected!");
+        }
+        if(adapter.isEnabled()){
+            tv_bluetooth.setText("Bluetooth connected");
         }
 
     }
