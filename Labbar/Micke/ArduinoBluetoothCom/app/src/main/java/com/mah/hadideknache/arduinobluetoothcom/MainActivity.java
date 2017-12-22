@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private ConnectedThread conThread;
     private BluetoothDevice bluetoothDevice;
     Spinner spinner;
-    private TextView textView;
-    private Button btn;
+    private TextView textView, tv_bluetooth, tv_server;
+    private Button btn, btn_bt, btn_server;
     private MqttHelper mqttHelper;
     private boolean isOn = false;
     private String labelSelected = "left";
@@ -69,30 +69,36 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         textView = (TextView) findViewById(R.id.blueDevice);
+        initComponents();
         setUpBluetooth();
         startMqtt();
-        initComponents();
+
         initWeka();
 
         btMsgHandler = new MyHandler(this, classifier, data);
     }
 
     private void initComponents() {
-        String[] labels = {"left", "right", "up", "down","tilt_left","tilt_right"};
-        spinner = (Spinner)findViewById(R.id.spinner_1);
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(getApplicationContext(),R.layout.support_simple_spinner_dropdown_item,labels);
-        spinner.setAdapter(typeAdapter);
-        spinner.setOnItemSelectedListener(new LabelListener());
 
 
-        btn = (Button) findViewById(R.id.button);
-        btn.setOnClickListener(new View.OnClickListener() {
+        btn_bt = findViewById(R.id.btn_bt);
+        btn_bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mqttHelper.sendMessageMqtt();
-
+                setUpBluetooth();
             }
         });
+
+        btn_server = findViewById(R.id.btn_server);
+        btn_server.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startMqtt();
+            }
+        });
+
+        tv_bluetooth = findViewById(R.id.tv_bluetooth);
+        tv_server = findViewById(R.id.tv_server);
     }
 
 
@@ -165,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(enableIntent,1);
             }
         }
+
         Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
@@ -182,6 +189,9 @@ public class MainActivity extends AppCompatActivity {
         }
         else{
             textView.setText("No device connected!");
+        }
+        if(adapter.isEnabled()){
+            tv_bluetooth.setText("Bluetooth connected");
         }
 
     }
@@ -204,6 +214,10 @@ public class MainActivity extends AppCompatActivity {
 
     public String getLabelSelected() {
         return labelSelected;
+    }
+
+    public void setServerText(String text){
+        tv_server.setText(text);
     }
 
 

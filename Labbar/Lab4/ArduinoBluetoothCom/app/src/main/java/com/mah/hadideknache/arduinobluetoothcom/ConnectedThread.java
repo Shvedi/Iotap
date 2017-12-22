@@ -50,6 +50,7 @@ public class ConnectedThread extends Thread{
             boolean reading = false;
 
             while (true) {
+
                /* try {
 
                  //   Log.d("CON BEFORE IF: ", String.valueOf(inputStream.available()));

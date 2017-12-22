@@ -26,9 +26,9 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public class MqttHelper {
     public MqttAndroidClient mqttAndroidClient;
 
-    private String serverUri = "Write server adress tcp://+server:port";
-    private String mqttUser = "Username goes here";
-    private String mqttPassword = "Password goes here";
+    private String serverUri = "tcp://m23.cloudmqtt.com:16401";
+    private String mqttUser = "ogftomsr";
+    private String mqttPassword = "2K-NimuEoofE";
     private String clientId = "AndroidClient";
     private String subs = "esp/test";
     private MainActivity activity;
