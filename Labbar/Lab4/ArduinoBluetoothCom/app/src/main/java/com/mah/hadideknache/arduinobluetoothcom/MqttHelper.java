@@ -27,13 +27,17 @@ public class MqttHelper {
     public MqttAndroidClient mqttAndroidClient;
 
     private String serverUri = "tcp://m14.cloudmqtt.com:14052";
-    private String mqttUser = Resources.getSystem().getString(R.string.mqtt_user);
-    private String mqttPassword = Resources.getSystem().getString(R.string.mqtt_pw);;
+    private String mqttUser ;
+    private String mqttPassword;
     private String clientId = "AndroidClient";
     private String subs = "esp/test";
     private final ColorPicker colorPick;
     private String message;
+
+
     public MqttHelper(MainActivity main, Context context){
+        mqttUser = context.getString(R.string.mqtt_user);
+        mqttPassword = context.getString(R.string.mqtt_pw);
         mqttAndroidClient = new MqttAndroidClient(context,serverUri,clientId);
         colorPick = new ColorPicker(main, 255, 125, 125, 125);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
