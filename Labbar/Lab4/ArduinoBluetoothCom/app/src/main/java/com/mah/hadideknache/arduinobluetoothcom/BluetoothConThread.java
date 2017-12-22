@@ -3,6 +3,7 @@ package com.mah.hadideknache.arduinobluetoothcom;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -34,8 +35,10 @@ public class BluetoothConThread extends Thread {
             bluetoothSocket.connect();
             main.startConnected(bluetoothSocket);
         } catch (IOException connectException) {
+            Log.d("BTCONTHREAD: ","ConnectionFailed");
             try {
                 bluetoothSocket.close();
+
             } catch (IOException closeException) { }
             return;
         }
