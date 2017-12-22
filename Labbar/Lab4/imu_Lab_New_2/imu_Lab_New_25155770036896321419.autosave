@@ -11,23 +11,22 @@ import java.io.*;
 import static javax.swing.JOptionPane.*;
 import java.awt.Toolkit;
 import wekaizing.*;
-String []gesture = {"left", "right","up","down","tilt_left","tilt_right"};
-int gest = 0;
+
 //Declare the weka variables
 WekaData mydata;
 WekaClassifier classifier;
-String trainPath = "/Users/hadideknache/Desktop/IOT ht17/imu_Lab_New_2/all_my1.arff";
-String lable = "all";
+String trainPath = "Users/hello/OneDrive/Dokument/Plugg/3/IOTAP/LabbGrupp/Iotap/Labbar/Lab4/imu_Lab_New_2/Train_test12_18.arff";
+String lable = "left";
 int counter = 1;
 int counterg = 0;
 private Functions func;
-int freq = 40; //frequency of the sampling in sensor
-int sen = 5000; //sensitivity of the sensor
+int freq = 45; //frequency of the sampling in sensor
+int sens = 18000; //sensitivity of the sensor
 int insNum = 40; //length of sliding window
 int ins = 1; // counter for gesture
-boolean trainFile = false; // if trainFile is set to True, the application generates training dataset
+boolean trainFile = true; // if trainFile is set to True, the application generates training dataset
 boolean logFile = false; // logs sensordata
-boolean gesture_rec = true; // recognizes gestures in real-time
+boolean gesture_rec = false; // recognizes gestures in real-time
 long stamp = 0;
 
 String portName = "";
@@ -58,6 +57,7 @@ PFont  g_font;
 
 
 int[] arr = new int[(insNum*6)+1];
+int[] intArray = new int[(insNum*6)+1];
 
 void setup()
 {
@@ -182,24 +182,19 @@ void processSerialData() {
           arr[(6*(counter-1))+5] = yRate; 
         //file.print(tempStr); //(string, start char, end char)
         if (counter == insNum) {
-          System.out.println("Finito!");
-          arr = func.getData(arr);
+          intArray = func.getData(arr);
           for(int i = 0;i<(insNum*6);i++){
-              file.print(arr[i]+",");
+              file.print(intArray[i]+",");
           }
-          file.print (gesture[gest]+"\r\n");
+          file.print (lable+"\r\n");
           counter = 0;
           fill(0, 0, 0);
            background(102);
-          text("Gesture Type:"+gesture[gest]+",  Gesture Number:"+ins, 400, 530); 
+          text("Gesture Type:"+lable+",  Gesture Number:"+ins, 400, 530); 
             Toolkit.getDefaultToolkit().beep();
-            if(ins%10==0){
-            gest++;
-          }
           ins++;
       }
         file.flush();
-        System.out.println(counter);
         counter++;
         }
        
@@ -216,7 +211,7 @@ void processSerialData() {
           counterg++;
           println (counterg);
          //Predict the class (the gestures "up", "right","left","down" ... are assigned to numbers 1,2,3,4 ...)
-         //String []gesture = {"left", "right","up","down","tilt_left","tilt_right"};
+         String []gesture = {"left", "right","up","down","tilt_left","tilt_right"};
          if (counterg == insNum) {
            testData[insNum] = 9;
            counterg = 0;
@@ -372,6 +367,8 @@ String port() {
 }
 void setupSensor(){
   g_serial.write("w"+insNum+"\n"); // set the window size in the sensor
+   g_serial.write("f"+freq+"\n"); // set the window size in the sensor
+    g_serial.write("s"+ sens+"\n"); // set the window size in the sensor
 }
 void mousePressed() {
   file.close();
