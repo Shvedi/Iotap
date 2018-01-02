@@ -11,13 +11,14 @@ import java.io.*;
 import static javax.swing.JOptionPane.*;
 import java.awt.Toolkit;
 import wekaizing.*;
-String []gesture = {"left", "right","up","down","tilt_left","tilt_right"};
+//String []gesture = {"left", "right","up","down","tilt left","tilt right", "clockewise","notClockwise"};
+String []gesture = {"up"};
 int gest = 0;
 //Declare the weka variables
 WekaData mydata;
 WekaClassifier classifier;
 String trainPath = "/Users/hadideknache/Desktop/IOT ht17/imu_Lab_New_2/all_my1.arff";
-String lable = "all";
+String lable = "up";
 int counter = 1;
 int counterg = 0;
 private Functions func;
@@ -193,7 +194,7 @@ void processSerialData() {
            background(102);
           text("Gesture Type:"+gesture[gest]+",  Gesture Number:"+ins, 400, 530); 
             Toolkit.getDefaultToolkit().beep();
-            if(ins%60==0){
+            if(ins%20==0){
             gest++;
           }
           ins++;

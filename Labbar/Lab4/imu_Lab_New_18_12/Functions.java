@@ -72,19 +72,19 @@ public class Functions{
         for(int i=0;i<window;i++){
             for (int j=0;j<6;j++) {
                 if (j<3) {
-                    if (minAcc>dataset[i*j]) {
-                        minAcc = dataset[i*j];
+                    if (minAcc>average[i*j]) {
+                        minAcc = average[i*j];
                     }
-                    if (maxAcc<dataset[i*j]) {
-                        maxAcc = dataset[i*j];
+                    if (maxAcc<average[i*j]) {
+                        maxAcc = average[i*j];
                     }
                 }
                 else{
-                    if (minGyro>dataset[i*j]) {
-                        minGyro = dataset[i*j];
+                    if (minGyro>average[i*j]) {
+                        minGyro = average[i*j];
                     }
-                    if (maxGyro<dataset[i*j]) {
-                        maxGyro = dataset[i*j];
+                    if (maxGyro<average[i*j]) {
+                        maxGyro = average[i*j];
                     }
                 }
             }
@@ -115,8 +115,12 @@ public class Functions{
     public int[] getData(int[] arr){
         this.dataset = arr;
         movingAverage();
-        maxMin();
-        normalize();
+      //  maxMin();
+       // normalize();
+        for(int i = 0; i<average.length; i++){
+          data[i] = (int)average[i];
+          System.out.println("copied Value nr "+i+" : " +data[i]);
+        }
         return data;
     }
 }
