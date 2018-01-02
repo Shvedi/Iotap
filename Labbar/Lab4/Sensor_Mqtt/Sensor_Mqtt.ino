@@ -4,21 +4,12 @@
 #include <PubSubClient.h>
 #include <Wire.h>
 
-String command = "";
 int counterDisconnect = 0;
 int counterConnect = 0;
 const int inRange = 4500;
-
-//Digital pins
 const int trig = D1;
 const int echo = D0;
-const int ledSensor = D2;
-const int ledUp = D5;
-const int ledDown = D6;
-const int ledLeft = D7;
-const int ledRight = D8; 
-
-//User credentials
+const int led = D6;
 const char* ssid = "Sona";
 const char* password =  "cff7350a";
 const char* mqttServer = "m23.cloudmqtt.com";
@@ -32,17 +23,9 @@ String str;
 
 void setup() {
   pinMode(trig,OUTPUT);
-  pinMode(ledSensor, OUTPUT);
-  pinMode(ledUp, OUTPUT);
-  pinMode(ledDown, OUTPUT);
-  pinMode(ledLeft, OUTPUT);
-  pinMode(ledRight, OUTPUT);
+  pinMode(led, OUTPUT);
   digitalWrite(trig,LOW);
-  digitalWrite(ledSensor, LOW);
-  digitalWrite(ledUp, LOW);
-  digitalWrite(ledDown, LOW);
-  digitalWrite(ledLeft, LOW);
-  digitalWrite(ledRight, LOW);
+  digitalWrite(led,LOW);
   
   Serial.begin(115200);
   setup_wifi();
@@ -86,7 +69,7 @@ if(inRange>pulse_width){
     Serial.println("Connecting to MQTT...");
  
     if (client.connect("ESP8266Client", mqttUser, mqttPassword )) {
-      digitalWrite(ledSensor,HIGH);
+      digitalWrite(led,HIGH);
       Serial.println("Connected");
       client.publish("esp/test", "Hello from ESP8266");
       client.subscribe("esp/test");  
@@ -101,12 +84,14 @@ if(inRange>pulse_width){
     }
   }
  }
+  
+  //kod för känna igen rörelse och LED tändning
 }
 if(inRange<pulse_width){
   counterDisconnect++;
   counterConnect = 0;
   if(counterDisconnect>=10&&client.connected()){
-   digitalWrite(ledSensor,LOW);
+   digitalWrite(led,LOW);
    client.publish("esp/test2","Goodbye from ESP8266");
    client.disconnect();
    counterDisconnect = 0;   
@@ -137,48 +122,20 @@ void setup_wifi(){
   Serial.println(WiFi.localIP());
 }
 void callback(char* topic, byte* payload, unsigned int length) {
-  command = "";
+ 
   Serial.print("Message arrived in topic: ");
   Serial.println(topic);
  
   Serial.print("Message:");
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
-    command+=(char)payload[i];
   }
-  translateCommand();
+ 
   Serial.println();
   Serial.println("-----------------------");
  
 }
 
-void translateCommand(){
-  Serial.println("\n" + command);
-  ledsOff();
-  if(command == "up"){
-    Serial.println("Led 1 on");
-    digitalWrite(ledUp, HIGH);
-  }
-  if(command == "down"){
-    Serial.println("Led 2 on");
-    digitalWrite(ledDown, HIGH);
-  }
-  if(command == "left"){
-    Serial.println("Led 3 on");
-    digitalWrite(ledLeft, HIGH);
-  }
-  if(command == "right"){
-    Serial.println("Led 4 on");
-    digitalWrite(ledRight, HIGH);
-  }
- 
-}
-void ledsOff(){
-  digitalWrite(ledUp, LOW);
-  digitalWrite(ledDown, LOW);
-  digitalWrite(ledLeft, LOW);
-  digitalWrite(ledRight, LOW);
-}
 char* string2char(String command){
     if(command.length()!=0){
         char *p = const_cast<char*>(command.c_str());
