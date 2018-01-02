@@ -50,84 +50,27 @@ public class ConnectedThread extends Thread{
             boolean reading = false;
 
             while (true) {
-
-               /* try {
-
-                 //   Log.d("CON BEFORE IF: ", String.valueOf(inputStream.available()));
-                    if (inputStream.available()==0 ){
-                        emptyCounter++;
-                        if (emptyCounter>2){
-                            okToRead=true;
-                            emptyCounter = 0;
-                        }
-
-                    }else if (!reading){
-                        emptyCounter = 0;
-                        inputStream.read();
-                        okToRead = false;
-                    }*/
-                    if (recieve ){
-
-
-                        emptyCounter = 0;
-                        reading = true;
-
-                        String msg = null;
-                        try {
-                            msg = inputStream.readLine();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        if (msg.matches("h(,-?\\d+){6},?")){
-                            Log.d("HANDLER: ", msg);
-                            Message msgs = handler.obtainMessage();
-                            Bundle bundle = new Bundle();
-                            bundle.putString("msg", msg);
-                            msgs.setData(bundle);
-                            handler.sendMessage(msgs);
-
-                        }else{
-                            Log.d("HANDLER: ", msg);
-                        }
-
-
-                        /*
-                        bytes += inputStream.read(buffer, bytes, buffer.length - bytes);
-                        for(int i = begin; i < bytes; i++) {
-
-                            if(buffer[i] == "h".getBytes()[0]) {
-
-                                handler.obtainMessage(1, begin, i, buffer).sendToTarget();
-                                begin = i;
-
-                                if(i == bytes - 1) {
-                                    bytes = 0;
-                                    begin = 0;
-
-                                }
-                            } }
-                    }else{
-                        inputStream.skip(inputStream.available());
-                        Log.d("CONTHREAD AVAILABLE: ", String.valueOf(inputStream.available()));
-                        reading = false;
-                        //while (inputStream.)
-                       // bytes += inputStream.read(buffer, bytes, buffer.length - bytes);
-
-                        bytes = 0;
-                        begin = 0;
+                if (recieve ){
+                    String msg = "";
+                    try {
+                        msg = inputStream.readLine();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
+                    if (msg.matches("h(,-?\\d+){6},?")){
+                        Log.d("HANDLER: ", msg);
+                        Message msgs = handler.obtainMessage();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("msg", msg);
+                        msgs.setData(bundle);
+                        handler.sendMessage(msgs);
 
-                } catch (IOException e) {
-                    break;
-                }*/
-            }/*
-                try {
-                    inputStream.readLine();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
+                    }else{
+                        Log.d("HANDLER: ", msg);
+                    }
+                }
             }
-        }
+    }
         public void write(byte[] bytes) {
             try {
                 outputStream.write(bytes);

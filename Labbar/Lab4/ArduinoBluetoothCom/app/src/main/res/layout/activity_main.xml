@@ -6,7 +6,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.mah.hadideknache.arduinobluetoothcom.MainActivity">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
+    <Spinner
+        android:layout_marginTop="40dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/classifierSpinner">
+
+    </Spinner>
+
+
+</LinearLayout>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -15,12 +29,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
-    <Spinner
-        android:id="@+id/spinner_1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="200dp"/>
+
 
     <LinearLayout
         android:layout_width="320dp"
@@ -28,13 +37,34 @@
         android:gravity="bottom"
         android:layout_gravity="center"
         android:layout_marginBottom="20dp"
+        android:layout_marginTop="80dp"
         android:orientation="vertical">
-        <Button
-            android:textAllCaps="false"
-            android:id="@+id/button"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Select RGB Color" />
+            android:id="@+id/tv_server"
+            android:text="server not connected"
+            android:textAlignment="center"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_server"
+            android:text="Connect to server"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/tv_bluetooth"
+            android:text="bluetooth not connected"
+            android:textAlignment="center"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_bt"
+            android:text="Scan for bluetooth devices"/>
+
     </LinearLayout>
 
 
