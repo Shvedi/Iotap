@@ -50,25 +50,16 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothConThread bluetoothConThread;
     private ConnectedThread conThread;
     private BluetoothDevice bluetoothDevice;
-    Spinner spinner;
     private TextView textView, tv_bluetooth, tv_server;
     private Button btn, btn_bt, btn_server;
     private MqttHelper mqttHelper;
     private boolean isOn = false;
-    private String labelSelected = "left";
-    ArrayList<Integer> m_instance = new ArrayList<>();
     Classifier classifier;
-    Instances data;
     MyHandler btMsgHandler;
     private static final int WINDOW_SIZE = 30;
     private ArrayList<Attribute> attrList = new ArrayList<>();
     private ArrayList<String> classVal = new ArrayList<>();
-    @Override
-    public boolean isFinishing() {
-        conThread.cancel();
-        bluetoothConThread.cancel();
-        return super.isFinishing();
-    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     private void initWeka() {
         AssetManager assetManager = getAssets();
         try {
-            classifier = (Classifier)weka.core.SerializationHelper.read(assetManager.open("SimpleLogistic_12_18.model"));
+            classifier = (Classifier)weka.core.SerializationHelper.read(assetManager.open("SimpleLogistic_22_12.model"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -136,6 +127,8 @@ public class MainActivity extends AppCompatActivity {
         classVal.add("down");
         classVal.add("tilt_left");
         classVal.add("tilt_right");
+        classVal.add("clockwise");
+        classVal.add("notClockwise");
         attrList.add(new Attribute("class", classVal));
         for (int i = 0; i < WINDOW_SIZE; i++) {
             attrList.add(new Attribute("AccX" + (i + 1)));
@@ -146,14 +139,6 @@ public class MainActivity extends AppCompatActivity {
             attrList.add(new Attribute("GyrZ" + (i + 1)));
         }
 
-    }
-
-    private void copyFile(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[1024];
-        int read;
-        while((read = in.read(buffer)) != -1){
-            out.write(buffer, 0, read);
-        }
     }
 
     private void startMqtt() {
@@ -234,10 +219,7 @@ public class MainActivity extends AppCompatActivity {
     public void postResult(String s) {
         Toast.makeText(this ,s, Toast.LENGTH_SHORT).show();
         conThread.startRecieve();
-    }
-
-    public String getLabelSelected() {
-        return labelSelected;
+        mqttHelper.sendMessageMqtt(s);
     }
 
     public void setServerText(String text){
@@ -322,22 +304,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    private class LabelListener implements AdapterView.OnItemSelectedListener {
-
-
-        @Override
-        public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-            Log.v("DATA ENTRY",String.valueOf(position));
-            labelSelected = String.valueOf(position);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> adapterView) {
-
-        }
+    @Override
+    public boolean isFinishing() {
+        conThread.cancel();
+        bluetoothConThread.cancel();
+        return super.isFinishing();
     }
-
 
     private static class Preprocessor {
         private final double[] dataset;
@@ -389,14 +361,6 @@ public class MainActivity extends AppCompatActivity {
                     average[(i * 6) + 4] = ((dataset[(i * 6) + 4] + dataset[16] + dataset[10] + dataset[4]) / 4);
                     average[(i * 6) + 5] = ((dataset[(i * 6) + 5] + dataset[17] + dataset[11] + dataset[5]) / 4);
                 }
-    /*else if(i==4){
-        average[(i*6)]   = ((dataset[(i*6)]+dataset[18]+dataset[12]+dataset[6]+dataset[0])/5);
-        average[(i*6)+1] = ((dataset[(i*6)]+dataset[19]+dataset[13]+dataset[7]+dataset[1])/5);
-        average[(i*6)+2] = ((dataset[(i*6)]+dataset[20]+dataset[14]+dataset[8]+dataset[2])/5);
-        average[(i*6)+3] = ((dataset[(i*6)]+dataset[21]+dataset[15]+dataset[9]+dataset[3])/5);
-        average[(i*6)+4] = ((dataset[(i*6)]+dataset[22]+dataset[16]+dataset[10]+dataset[4])/5);
-        average[(i*6)+5] = ((dataset[(i*6)]+dataset[23]+dataset[17]+dataset[11]+dataset[5])/5);
-    }*/
                 else {
                     average[(i * 6)] = ((dataset[(i * 6)] + dataset[((i - 1) * 6)] + dataset[((i - 2) * 6)] + dataset[((i - 3) * 6)] + dataset[((i - 4) * 6)]) / 5);
                     average[(i * 6) + 1] = ((dataset[(i * 6) + 1] + dataset[((i - 1) * 6) + 1] + dataset[((i - 2) * 6) + 1] + dataset[((i - 3) * 6) + 1] + dataset[((i - 4) * 6) + 1]) / 5);
@@ -429,10 +393,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-          /*  System.out.println("MinAcc: "+minAcc);
-            System.out.println("MaxAcc: "+maxAcc);
-            System.out.println("MinGyro: "+minGyro);
-            System.out.println("MaxGyro: "+maxGyro);*/
         }
 
         public void normalize() {
