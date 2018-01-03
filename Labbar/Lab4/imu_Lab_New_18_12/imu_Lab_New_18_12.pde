@@ -12,20 +12,20 @@ import static javax.swing.JOptionPane.*;
 import java.awt.Toolkit;
 import wekaizing.*;
 //String []gesture = {"left", "right","up","down","tilt left","tilt right", "clockewise","notClockwise"};
-String []gesture = {"tilt left", "tilt right"};
+String []gesture = {"up", "clockwise"};
 int gest = 0;
 //Declare the weka variables
 WekaData mydata;
 WekaClassifier classifier;
 String trainPath = "/Users/hadideknache/Desktop/IOT ht17/imu_Lab_New_2/all_my1.arff";
-String lable = "tilts";
+String lable = "clockWises";
 int counter = 1;
 int counterg = 0;
 private Functions func;
 int freq = 30; //frequency of the sampling in sensor
 int sen = 5000; //sensitivity of the sensor
 int insNum = 30; //length of sliding window
-int ins = 40; // counter for gesture
+int ins = 1; // counter for gesture
 boolean trainFile = true; // if trainFile is set to True, the application generates training dataset
 boolean logFile = false; // logs sensordata
 boolean gesture_rec = false; // recognizes gestures in real-time
@@ -194,7 +194,7 @@ void processSerialData() {
            background(102);
           text("Gesture Type:"+gesture[gest]+",  Gesture Number:"+ins, 400, 530); 
             Toolkit.getDefaultToolkit().beep();
-            if(ins%40==0){
+            if(ins%60==0){
             gest++;
           }
           ins++;

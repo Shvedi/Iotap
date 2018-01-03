@@ -119,7 +119,7 @@ public class Functions{
        // normalize();
         for(int i = 0; i<average.length; i++){
           data[i] = (int)average[i];
-          System.out.println("copied Value nr "+i+" : " +data[i]);
+         // System.out.println("copied Value nr "+i+" : " +data[i]);
         }
         return data;
     }

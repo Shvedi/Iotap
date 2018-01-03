@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver mMessageReceiver = new broadCastReceiver();
     private BroadcastReceiver btStatusReciever = new StatusBroadCastReceiver();
     private Spinner clsSpinner;
-    final String[] classifiersArr = new String[]{"SimpleLogistics.model","Logistic.model","J48.model","MultiLayerPerceptron.model", "bayesNet.model", "naiveBayes.model"};
+    final String[] classifiersArr = new String[]{"SimpleLogistics.model","Logistic.model","J48.model","MultiLayerPerceptron.model", "bayesnet.model", "naiveBayes.model"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         initComponents();
         btServiehandler = new BtServiceHandler();
         startMqtt();
-        initWeka("SimpleLogistic.model");
+        initWeka("bayesnet.model");
         initiateAttributeList();
 
     }

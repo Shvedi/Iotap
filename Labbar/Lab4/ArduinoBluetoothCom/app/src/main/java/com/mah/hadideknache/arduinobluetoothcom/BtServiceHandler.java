@@ -28,6 +28,7 @@ public class BtServiceHandler {
         // supporting component replacement by other applications).
         Intent intent = new Intent(main,BtService.class);
         main.startService(intent);
+
         mConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder binder) {
                 // This is called when the connection with the service has been
@@ -73,8 +74,9 @@ public class BtServiceHandler {
     public void doUnbindService(MainActivity mainActivity) {
         if (mIsBound) {
             // Detach our existing connection.
-            mainActivity.unbindService(mConnection);
             mIsBound = false;
+            mainActivity.getApplicationContext().unbindService(mConnection);
+
         }
     }
 
