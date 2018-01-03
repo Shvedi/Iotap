@@ -3,11 +3,15 @@ package com.mah.hadideknache.arduinobluetoothcom;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.AssetManager;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,29 +50,18 @@ import weka.core.converters.ConverterUtils;
  */
 
 public class MainActivity extends AppCompatActivity {
-    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-    private BluetoothConThread bluetoothConThread;
-    private ConnectedThread conThread;
-    private BluetoothDevice bluetoothDevice;
-    Spinner spinner;
-    private TextView textView;
-    private Button btn;
+    private TextView textView, tv_bluetooth, tv_server;
+    private Button btn, btn_bt, btn_server;
     private MqttHelper mqttHelper;
-    private boolean isOn = false;
-    private String labelSelected = "left";
-    ArrayList<Integer> m_instance = new ArrayList<>();
-    Classifier classifier;
-    Instances data;
-    MyHandler btMsgHandler;
+    private Classifier classifier;
     private static final int WINDOW_SIZE = 30;
     private ArrayList<Attribute> attrList = new ArrayList<>();
     private ArrayList<String> classVal = new ArrayList<>();
-    @Override
-    public boolean isFinishing() {
-        conThread.cancel();
-        bluetoothConThread.cancel();
-        return super.isFinishing();
-    }
+    BtServiceHandler btServiehandler;
+    private BroadcastReceiver mMessageReceiver = new broadCastReceiver();
+    private BroadcastReceiver btStatusReciever = new StatusBroadCastReceiver();
+    private Spinner clsSpinner;
+    final String[] classifiersArr = new String[]{"SimpleLogistics.model","Logistic.model","J48.model","MultiLayerPerceptron.model", "bayesnet.model", "naiveBayes.model"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,42 +69,58 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         textView = (TextView) findViewById(R.id.blueDevice);
-        setUpBluetooth();
-        startMqtt();
         initComponents();
-        initWeka();
+        btServiehandler = new BtServiceHandler();
+        startMqtt();
+        initWeka("bayesnet.model");
         initiateAttributeList();
-        initBtHandler();
 
-    }
-
-    private void initBtHandler() {
-        btMsgHandler = new MyHandler(this, classifier, attrList);
     }
 
     private void initComponents() {
-        String[] labels = {"left", "right", "up", "down","tilt_left","tilt_right"};
-        spinner = (Spinner)findViewById(R.id.spinner_1);
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(getApplicationContext(),R.layout.support_simple_spinner_dropdown_item,labels);
-        spinner.setAdapter(typeAdapter);
-        spinner.setOnItemSelectedListener(new LabelListener());
-
-
-        btn = (Button) findViewById(R.id.button);
-        btn.setOnClickListener(new View.OnClickListener() {
+        btn_bt = findViewById(R.id.btn_bt);
+        btn_bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mqttHelper.sendMessageMqtt();
+                setUpBluetooth();
+            }
+        });
+
+        btn_server = findViewById(R.id.btn_server);
+        btn_server.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startMqtt();
+            }
+        });
+
+        tv_bluetooth = findViewById(R.id.tv_bluetooth);
+        tv_server = findViewById(R.id.tv_server);
+
+
+        clsSpinner = (Spinner) findViewById(R.id.classifierSpinner);
+        final ArrayAdapter<String> classifiers = new ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item, classifiersArr);
+        clsSpinner.setAdapter(classifiers);
+        clsSpinner.setSelection(0);
+        clsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                initWeka(classifiersArr[position]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
 
             }
         });
     }
 
 
-    private void initWeka() {
+    private void initWeka(String type) {
         AssetManager assetManager = getAssets();
         try {
-            classifier = (Classifier)weka.core.SerializationHelper.read(assetManager.open("SimpleLogistic_12_18.model"));
+            classifier = (Classifier)weka.core.SerializationHelper.read(assetManager.open(type));
+            Log.d("INITWEKA: ",classifier.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -128,8 +137,10 @@ public class MainActivity extends AppCompatActivity {
         classVal.add("right");
         classVal.add("up");
         classVal.add("down");
-        classVal.add("tilt_left");
-        classVal.add("tilt_right");
+        classVal.add("tilt left");
+        classVal.add("tilt right");
+        classVal.add("clockwise");
+        classVal.add("notClockwise");
         attrList.add(new Attribute("class", classVal));
         for (int i = 0; i < WINDOW_SIZE; i++) {
             attrList.add(new Attribute("AccX" + (i + 1)));
@@ -140,14 +151,6 @@ public class MainActivity extends AppCompatActivity {
             attrList.add(new Attribute("GyrZ" + (i + 1)));
         }
 
-    }
-
-    private void copyFile(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[1024];
-        int read;
-        while((read = in.read(buffer)) != -1){
-            out.write(buffer, 0, read);
-        }
     }
 
     private void startMqtt() {
@@ -176,154 +179,84 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        btServiehandler.doBindService(this);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter ("newList"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(btStatusReciever, new IntentFilter ("btStatus"));
+    }
+
+    @Override
+    protected void onPause() {
+        btServiehandler.doUnbindService(this);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(btStatusReciever);
+        super.onPause();
+    }
+
+
     private void setUpBluetooth() {
-        if (adapter==null){
-            showMessage("This device doesn´t support bluetooth");
-        }
-        else{
-            showMessage("Setting up bluetooth");
-            if (!adapter.isEnabled()){
-                Intent enableIntent = new Intent(adapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableIntent,1);
-            }
-        }
-        Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
-        if (pairedDevices.size() > 0) {
-            for (BluetoothDevice device : pairedDevices) {
-                if (device.getName().equals("G11")){
-                    bluetoothDevice = device;
-                }
-
-            }
-            if (bluetoothDevice!=null){
-                textView.setText("Device Available: "+bluetoothDevice.getName());
-                bluetoothConThread = new BluetoothConThread(bluetoothDevice,adapter,this);
-                bluetoothConThread.start();
-            }
-
-        }
-        else{
-            textView.setText("No device connected!");
-        }
-
+        btServiehandler.connectDevice();
     }
 
-    private void showMessage(String message) {
-        Toast.makeText(this,message,Toast.LENGTH_SHORT);
-    }
-    public void startConnected(BluetoothSocket socket){
-        if (socket.isConnected()){
-            Log.d("MAIN: ","BT CONNECTIOn SUCCESSFUL");
-        }
-        conThread = new ConnectedThread(socket,btMsgHandler);
-        conThread.start();
-        btMsgHandler.setConThread(conThread);
-
-    }
 
     public void postResult(String s) {
         Toast.makeText(this ,s, Toast.LENGTH_SHORT).show();
-        conThread.startRecieve();
+        mqttHelper.sendMessageMqtt(s);
     }
 
-    public String getLabelSelected() {
-        return labelSelected;
+    public void setServerText(String text){
+        tv_server.setText(text);
     }
 
 
-    //static inner class doesn't hold an implicit reference to the outer class
-    public static class MyHandler extends Handler {
-        //Using a weak reference means you won't prevent garbage collection
-        private final WeakReference<MainActivity> myClassWeakReference;
-        private final Classifier classifier;
-        private final Instances data;
-        private final MainActivity myClass;
-        private ConnectedThread conThread;
-        private ClassifierThread classifierThread;
-        private long timer = 0;
-        ArrayList<Integer> m_instance = new ArrayList<>();
-        private ArrayList<Attribute> attrList = new ArrayList<>();
 
-        public MyHandler(MainActivity myClassInstance, Classifier classifier, ArrayList<Attribute> attrList) {
-            myClassWeakReference = new WeakReference<MainActivity>(myClassInstance);
-            myClass = myClassWeakReference.get();
-            this.classifier = classifier;
-
-            this.attrList = attrList;
-            this.data = new Instances("Janne", this.attrList, 0);
-
-        }
+    private class broadCastReceiver extends BroadcastReceiver{
+        private ArrayList<Integer> dataList;
+        private double[] values;
+        private Preprocessor preprocessor;
+        Instances data = new Instances("Janne", attrList, 0);
 
         @Override
-        public void handleMessage(Message message) {
-
-
-            if (myClass != null) {
-                Bundle bundle = message.getData();
-                String msg = bundle.getString("msg");
-                if (System.currentTimeMillis()-timer>500){
-                    m_instance.clear();
-                }
-                timer = System.currentTimeMillis();
-
-                String[] ints = msg.split(",");
-
-                for (int i = 1; i < 7; ++i) {
-                    m_instance.add(Integer.valueOf(ints[i]));
-                }
-               // Log.d("MAIN M_INSTANCE", String.valueOf(m_instance.size()));
-                if (m_instance.size() == WINDOW_SIZE * 6) {
-                    conThread.stopRecieve();
-                    // Create the instance
-                    double[] values = new double[m_instance.size() + 1];
-                    for (int i = 0; i < m_instance.size(); ++i) {
-                        values[i] = m_instance.get(i);
-                    }
-                    values[m_instance.size()] = -1;
-                    m_instance.clear();
-                    Preprocessor preprocessor = new Preprocessor(values);
-                    values = preprocessor.run();
-
-
-                    DenseInstance denseInstance = new DenseInstance(1.0, values);
-                    denseInstance.setDataset(data);
-                    data.add(denseInstance);
-                    // Tell the dataset what attribute is the class
-                    data.setClassIndex(0);
-                    try {
-                        // Label it
-                        int label = (int) classifier.classifyInstance(denseInstance);
-                        myClass.postResult(data.classAttribute().value(label));
-                        Log.d("CLASSYFIED:", String.valueOf(label));
-                        Log.d("CLASSIFIED","LABEL: "+data.classAttribute().value(label) );
-
-                    } catch (Exception err) {
-                        Log.e("MainActivity", "Unable to classify", err);
-                    }
-                }
+        public void onReceive(Context context, Intent intent) {
+            this.dataList = intent.getIntegerArrayListExtra("theList");
+            Log.d("MAINACTIVITY", "LIST SIZE: "+dataList.size());
+            values = new double[dataList.size() + 1];
+            for (int i = 0; i < dataList.size(); ++i) {
+                values[i] = dataList.get(i);
             }
-        }
-        public void setConThread(ConnectedThread conThread) {
-            this.conThread = conThread;
+            values[dataList.size()] = -1;
+            dataList.clear();
+            preprocessor = new Preprocessor(values);
+            values = preprocessor.run();
+
+            DenseInstance denseInstance = new DenseInstance(1.0, values);
+            denseInstance.setDataset(data);
+            data.add(denseInstance);
+            // Tell the dataset what attribute is the class
+            data.setClassIndex(0);
+            try {
+                // Label it
+                int label = (int) classifier.classifyInstance(denseInstance);
+                postResult(data.classAttribute().value(label));
+                Log.d("CLASSYFIED:", String.valueOf(label));
+                Log.d("CLASSIFIED","LABEL: "+data.classAttribute().value(label) );
+
+            } catch (Exception err) {
+                Log.e("MainActivity", "Unable to classify", err);
+            }
+            btServiehandler.startReceive();
         }
     }
 
 
-    private class LabelListener implements AdapterView.OnItemSelectedListener {
-
-
-        @Override
-        public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-            Log.v("DATA ENTRY",String.valueOf(position));
-            labelSelected = String.valueOf(position);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> adapterView) {
-
-        }
+    @Override
+    public boolean isFinishing() {
+        btServiehandler.disconnectBT();
+        btServiehandler.stopService(this);
+        return super.isFinishing();
     }
-
 
     private static class Preprocessor {
         private final double[] dataset;
@@ -336,10 +269,11 @@ public class MainActivity extends AppCompatActivity {
 
         public double[] run() {
             movingAverage();
-            maxMin();
-            normalize();
+          //  maxMin();
+            //normalize();
 
-            return dataset;
+
+            return average;
         }
 
         public void movingAverage() {
@@ -375,14 +309,6 @@ public class MainActivity extends AppCompatActivity {
                     average[(i * 6) + 4] = ((dataset[(i * 6) + 4] + dataset[16] + dataset[10] + dataset[4]) / 4);
                     average[(i * 6) + 5] = ((dataset[(i * 6) + 5] + dataset[17] + dataset[11] + dataset[5]) / 4);
                 }
-    /*else if(i==4){
-        average[(i*6)]   = ((dataset[(i*6)]+dataset[18]+dataset[12]+dataset[6]+dataset[0])/5);
-        average[(i*6)+1] = ((dataset[(i*6)]+dataset[19]+dataset[13]+dataset[7]+dataset[1])/5);
-        average[(i*6)+2] = ((dataset[(i*6)]+dataset[20]+dataset[14]+dataset[8]+dataset[2])/5);
-        average[(i*6)+3] = ((dataset[(i*6)]+dataset[21]+dataset[15]+dataset[9]+dataset[3])/5);
-        average[(i*6)+4] = ((dataset[(i*6)]+dataset[22]+dataset[16]+dataset[10]+dataset[4])/5);
-        average[(i*6)+5] = ((dataset[(i*6)]+dataset[23]+dataset[17]+dataset[11]+dataset[5])/5);
-    }*/
                 else {
                     average[(i * 6)] = ((dataset[(i * 6)] + dataset[((i - 1) * 6)] + dataset[((i - 2) * 6)] + dataset[((i - 3) * 6)] + dataset[((i - 4) * 6)]) / 5);
                     average[(i * 6) + 1] = ((dataset[(i * 6) + 1] + dataset[((i - 1) * 6) + 1] + dataset[((i - 2) * 6) + 1] + dataset[((i - 3) * 6) + 1] + dataset[((i - 4) * 6) + 1]) / 5);
@@ -415,10 +341,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-          /*  System.out.println("MinAcc: "+minAcc);
-            System.out.println("MaxAcc: "+maxAcc);
-            System.out.println("MinGyro: "+minGyro);
-            System.out.println("MaxGyro: "+maxGyro);*/
         }
 
         public void normalize() {
@@ -439,4 +361,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private class StatusBroadCastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String msg = intent.getStringExtra("theBtStatus");
+            tv_bluetooth.setText(msg);
+        }
+    }
 }

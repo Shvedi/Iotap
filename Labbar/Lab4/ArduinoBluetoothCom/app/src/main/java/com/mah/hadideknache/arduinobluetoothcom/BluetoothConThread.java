@@ -16,12 +16,13 @@ public class BluetoothConThread extends Thread {
     private BluetoothSocket bluetoothSocket;
     private BluetoothDevice device;
     private BluetoothAdapter adapter;
-    private MainActivity main;
+    private BtService btService;
     private UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
-    public BluetoothConThread(BluetoothDevice device, BluetoothAdapter adapter,MainActivity main) {
+    public BluetoothConThread(BluetoothDevice device, BluetoothAdapter adapter,BtService btService) {
+
         this.adapter = adapter;
-        this.main = main;
+        this.btService = btService;
         BluetoothSocket tmp = null;
         this.device = device;
         try {
@@ -33,7 +34,7 @@ public class BluetoothConThread extends Thread {
         adapter.cancelDiscovery();
         try {
             bluetoothSocket.connect();
-            main.startConnected(bluetoothSocket);
+            btService.startConnected(bluetoothSocket, device);
         } catch (IOException connectException) {
             Log.d("BTCONTHREAD: ","ConnectionFailed");
             try {
