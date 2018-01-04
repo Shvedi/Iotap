@@ -4,6 +4,7 @@
 #include <PubSubClient.h>
 #include <Wire.h>
 
+String id = "";
 String command = "";
 int counterDisconnect = 0;
 int counterConnect = 0;
@@ -25,7 +26,7 @@ const char* mqttServer = "m14.cloudmqtt.com";
 const int mqttPort = 14052;
 const char* mqttUser = "xkzzytzh";
 const char* mqttPassword = "m4bsF-0P2_vD";
-
+boolean locked = true;
 WiFiClient espClient;
 PubSubClient client(espClient);
 String str;
@@ -110,7 +111,9 @@ if(inRange<pulse_width){
    ledsOff();
    client.publish("esp/test2","Goodbye from ESP8266");
    client.disconnect();
-   counterDisconnect = 0;   
+   counterDisconnect = 0;
+   id = "";
+   locked = true;
    Serial.println("Disconnected"); 
   }
 }
@@ -146,6 +149,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
     command+=(char)payload[i];
+    if(i == length-2){
+      if(command == "notClockwise" && locked){
+        id = (char)payload[length-1];
+      }
+    }
   }
   translateCommand();
   Serial.println();
@@ -156,40 +164,40 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void translateCommand(){
   Serial.println("\n" + command);
   ledsOff();
-  if(command == "up"){
+  if(!locked){
+  if(command == "up" + id){
     Serial.println("Led 1 on");
     digitalWrite(ledUp, HIGH);
   }
-  if(command == "down"){
+  else if(command == "down" + id){
     Serial.println("Led 2 on");
     digitalWrite(ledDown, HIGH);
   }
-  if(command == "left"){
+  else if(command == "left" + id){
     Serial.println("Led 3 on");
     digitalWrite(ledLeft, HIGH);
   }
-  if(command == "right"){
+  else if(command == "right" + id){
     Serial.println("Led 4 on");
     digitalWrite(ledRight, HIGH);
   }
-  if(command == "tilt right"){
+  else if(command == "tilt right" + id){
     digitalWrite(ledRight, HIGH);
     digitalWrite(ledLeft, HIGH);
   }
-  if(command == "tilt left"){
+  else if(command == "tilt left" + id){
     digitalWrite(ledUp, HIGH);
     digitalWrite(ledDown, HIGH);
   }
-  if(command == "clockwise"){
-    spinlight();
   }
-  if(command == "anti-clockwise"){
-    
+  if(command == "notClockwise" + id){
+    spinlight();
+    locked = !locked;
   }
  
 }
 void spinlight(){
-  for(int i = 0; i<10; i++){
+  for(int i = 0; i<5; i++){
   digitalWrite(ledUp, HIGH);
   delay(100);
   digitalWrite(ledUp,LOW);
