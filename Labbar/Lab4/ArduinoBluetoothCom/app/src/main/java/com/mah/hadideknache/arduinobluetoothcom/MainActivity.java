@@ -61,11 +61,16 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver mMessageReceiver = new broadCastReceiver();
     private BroadcastReceiver btStatusReciever = new StatusBroadCastReceiver();
     private Spinner clsSpinner;
-    final String[] classifiersArr = new String[]{"SimpleLogistics.model","Logistic.model","J48.model","MultiLayerPerceptron.model", "bayesnet.model", "naiveBayes.model"};
+    final String[] classifiersArr = new String[]{"bayesnet.model", "SimpleLogistics.model","Logistic.model","J48.model","MultiLayerPerceptron.model",  "naiveBayes.model", "bayesNet20.model"};
+    private boolean appstart = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent i = getIntent();
+        appstart = i.getBooleanExtra("appStart",true);
+        i.putExtra("appStart",false);
 
         setContentView(R.layout.activity_main);
         textView = (TextView) findViewById(R.id.blueDevice);
@@ -182,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        btServiehandler.doBindService(this);
+        btServiehandler.doBindService(this, appstart);
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter ("newList"));
         LocalBroadcastManager.getInstance(this).registerReceiver(btStatusReciever, new IntentFilter ("btStatus"));
     }

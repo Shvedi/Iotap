@@ -24,8 +24,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
  */
 
 public class MqttHelper {
-    public MqttAndroidClient mqttAndroidClient;
 
+    public MqttAndroidClient mqttAndroidClient;
     private String serverUri = "tcp://m14.cloudmqtt.com:14052";
     private String mqttUser ;
     private String mqttPassword;
@@ -34,6 +34,7 @@ public class MqttHelper {
     private final ColorPicker colorPick;
     private String message;
     private MainActivity main;
+    String msgToSend = "";
 
 
     public MqttHelper(MainActivity main, Context context){
@@ -121,8 +122,9 @@ public class MqttHelper {
     }
 
     public void sendMessageMqtt(String msg){
+        msgToSend = msg+"1";
 
-        MqttMessage mqttMessage = new MqttMessage(msg.getBytes());
+        MqttMessage mqttMessage = new MqttMessage(msgToSend.getBytes());
         try {
             mqttAndroidClient.publish(subs,mqttMessage);
             Log.d("MqttHelper", mqttMessage.toString());

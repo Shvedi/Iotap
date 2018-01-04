@@ -169,7 +169,7 @@ public class BtService extends Service {
                         write("f30".getBytes());
                     }
                     if (msg.matches("h(,-?\\d+){6},?")) {
-                        Log.d("HANDLER: ", msg);
+                       // Log.d("HANDLER: ", msg);
 
                         if (System.currentTimeMillis() - timer > 600) {
                             m_instance.clear();

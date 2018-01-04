@@ -20,14 +20,18 @@ public class BtServiceHandler {
     private boolean mIsBound = false;
     private ServiceConnection mConnection;
 
-    public void doBindService(MainActivity main) {
+    public void doBindService(MainActivity main, boolean appstart) {
         Log.d("LocalHandler", "doBindService " );
         // Establish a connection with the service.  We use an explicit
         // class name because we want a specific service implementation that
         // we know will be running in our own process (and thus won't be
         // supporting component replacement by other applications).
         Intent intent = new Intent(main,BtService.class);
-        main.startService(intent);
+
+        if (appstart){
+            main.startService(intent);
+        }
+
 
         mConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder binder) {
