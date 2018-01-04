@@ -3,6 +3,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <Wire.h>
+#include "configMqtt.h"
 
 String id = "";
 String command = "";
@@ -20,12 +21,12 @@ const int ledLeft = D7;
 const int ledRight = D8; 
 
 //User credentials
-const char* ssid = "Sona";
-const char* password =  "cff7350a";
-const char* mqttServer = "m14.cloudmqtt.com";
-const int mqttPort = 14052;
-const char* mqttUser = "xkzzytzh";
-const char* mqttPassword = "m4bsF-0P2_vD";
+const char* ssid = WIFI_SSID;
+const char* password =  WIFI_PASSWORD;
+const char* mqttServer = MQTT_SERVER;
+const int mqttPort = MQTT_PORT;
+const char* mqttUser = MQTT_USER;
+const char* mqttPassword = MQTT_PASSWORD;
 boolean locked = true;
 WiFiClient espClient;
 PubSubClient client(espClient);
