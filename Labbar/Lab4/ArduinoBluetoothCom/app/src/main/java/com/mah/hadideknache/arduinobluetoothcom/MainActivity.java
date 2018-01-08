@@ -200,6 +200,14 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    @Override
+    public boolean isFinishing() {
+        btServiehandler.disconnectBT();
+        btServiehandler.stopService(this);
+        return super.isFinishing();
+    }
+
+
 
     private void setUpBluetooth() {
         btServiehandler.connectDevice();
@@ -256,12 +264,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    public boolean isFinishing() {
-        btServiehandler.disconnectBT();
-        btServiehandler.stopService(this);
-        return super.isFinishing();
-    }
 
     private static class Preprocessor {
         private final double[] dataset;

@@ -94,8 +94,9 @@ public class BtServiceHandler {
     }
 
     public void disconnectBT() {
-        mBoundService.disconnectBt();
-
+        if (mBoundService != null){
+            mBoundService.disconnectBt();
+        }
     }
 
     public void stopService(MainActivity mainActivity) {

@@ -109,11 +109,11 @@ public class BtService extends Service {
         // Cancel the persistent notification.
         // Tell the user we stopped.
         unregisterReceiver(receiver);
-        if (conThread.isAlive()){
+        if (conThread!=null){
             conThread.cancel();
         }
         Log.d("LocalService", "OnDestroy " );
-        Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show();
+
     }
     @Nullable
     @Override
